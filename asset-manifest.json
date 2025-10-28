@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/performance-dashboard/static/css/main.ef5e89ce.css",
-    "main.js": "/performance-dashboard/static/js/main.c267752e.js",
+    "main.css": "/performance-dashboard/static/css/main.6701dd79.css",
+    "main.js": "/performance-dashboard/static/js/main.9e0c2bc7.js",
     "index.html": "/performance-dashboard/index.html",
-    "main.ef5e89ce.css.map": "/performance-dashboard/static/css/main.ef5e89ce.css.map",
-    "main.c267752e.js.map": "/performance-dashboard/static/js/main.c267752e.js.map"
+    "main.6701dd79.css.map": "/performance-dashboard/static/css/main.6701dd79.css.map",
+    "main.9e0c2bc7.js.map": "/performance-dashboard/static/js/main.9e0c2bc7.js.map"
   },
   "entrypoints": [
-    "static/css/main.ef5e89ce.css",
-    "static/js/main.c267752e.js"
+    "static/css/main.6701dd79.css",
+    "static/js/main.9e0c2bc7.js"
   ]
 }
