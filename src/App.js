@@ -1,25 +1,152 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { testData } from './testData';
+import { allMSAs } from './msaData';
+import { fetchAllData } from './apiService';
 import './App.css';
+
+// Generate period options
+const generatePeriodOptions = () => {
+  const periods = [];
+  const quarters = [
+    { q: 'Q1', months: ['Jan', 'Feb', 'Mar'] },
+    { q: 'Q2', months: ['Apr', 'May', 'Jun'] },
+    { q: 'Q3', months: ['Jul', 'Aug', 'Sep'] },
+    { q: 'Q4', months: ['Oct', 'Nov', 'Dec'] }
+  ];
+  
+  quarters.forEach(quarter => {
+    quarter.months.forEach(month => {
+      for (let week = 1; week <= 4; week++) {
+        const label = `${quarter.q} ${month} Week ${week}`;
+        periods.push({ value: label, label: label });
+      }
+    });
+  });
+  
+  return periods;
+};
+
+// Generate period options based on period label type
+const generateDynamicPeriodOptions = (periodLabelType) => {
+  if (!periodLabelType) return generatePeriodOptions();
+  
+  switch(periodLabelType) {
+    case 'Quarter':
+      return [
+        { value: 'Q1', label: 'Q1' },
+        { value: 'Q2', label: 'Q2' },
+        { value: 'Q3', label: 'Q3' },
+        { value: 'Q4', label: 'Q4' }
+      ];
+    
+    case 'Month':
+      return [
+        { value: 'January', label: 'January' },
+        { value: 'February', label: 'February' },
+        { value: 'March', label: 'March' },
+        { value: 'April', label: 'April' },
+        { value: 'May', label: 'May' },
+        { value: 'June', label: 'June' },
+        { value: 'July', label: 'July' },
+        { value: 'August', label: 'August' },
+        { value: 'September', label: 'September' },
+        { value: 'October', label: 'October' },
+        { value: 'November', label: 'November' },
+        { value: 'December', label: 'December' }
+      ];
+    
+    case 'Year':
+      return [
+        { value: '2025', label: '2025' },
+        { value: '2024', label: '2024' },
+        { value: '2023', label: '2023' }
+      ];
+    
+    case 'Week':
+    default:
+      return generatePeriodOptions();
+  }
+};
+
+// Year options
+const yearOptions = [
+  { value: '2025', label: '2025' },
+  { value: '2024', label: '2024' },
+  { value: '2023', label: '2023' }
+];
+
+// Period Label options
+const periodLabelOptions = [
+  { value: 'Quarter', label: 'Quarter' },
+  { value: 'Week', label: 'Week' },
+  { value: 'Month', label: 'Month' },
+  { value: 'Year', label: 'Year' }
+];
+
+// Region Label options
+const regionLabelOptions = [
+  { value: 'Total USA', label: 'Total USA' },
+  { value: 'DG', label: 'DG' },
+  { value: 'Division', label: 'Division' },
+  { value: 'MSA', label: 'MSA' }
+];
+
+// Convert MSA array to select options
+const msaAllOptions = allMSAs.map(msa => ({ value: msa, label: msa }));
 
 function App() {
   // State for hierarchical navigation
   const [selectedDG, setSelectedDG] = useState(null);
   const [selectedDivision, setSelectedDivision] = useState(null);
   const [selectedMSA, setSelectedMSA] = useState(null);
+  const [selectedRegion, setSelectedRegion] = useState(null); // Unified region selector
   
-  // State for vertical selection (multi-select)
-  const [selectedVerticals, setSelectedVerticals] = useState([]);
+  // State for period and year selection
+  const [selectedPeriod, setSelectedPeriod] = useState({ value: 'Q4 Oct Week 4', label: 'Q4 Oct Week 4' });
+  const [selectedYear, setSelectedYear] = useState(yearOptions[0]);
+  const [selectedPeriodLabel, setSelectedPeriodLabel] = useState({ value: 'Week', label: 'Week' });
+  const [selectedRegionLabel, setSelectedRegionLabel] = useState({ value: 'Total USA', label: 'Total USA' });
+  
+  // State for vertical selection (multi-select) - separate for PG and Agency
+  const [selectedPGVerticals, setSelectedPGVerticals] = useState([]);
+  const [selectedAgencyVerticals, setSelectedAgencyVerticals] = useState([]);
   
   // State for current data to display
   const [currentData, setCurrentData] = useState(null);
   const [previousData, setPreviousData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [apiData, setApiData] = useState(null); // Store API response
   
   // Dropdown options
   const [dgOptions, setDgOptions] = useState([]);
   const [divisionOptions, setDivisionOptions] = useState([]);
-  const [msaOptions, setMsaOptions] = useState([]);
+  const [regionOptions, setRegionOptions] = useState([]); // Dynamic options based on Region Label
+  const [dynamicPeriodOptions, setDynamicPeriodOptions] = useState(generatePeriodOptions());
+  const [pgVerticalOptions] = useState([
+    { value: 'Community health centers', label: 'Community health centers' },
+    { value: 'Health Science Center', label: 'Health Science Center' },
+    { value: 'Hospital based Groups', label: 'Hospital based Groups' },
+    { value: 'Hospitals', label: 'Hospitals' },
+    { value: 'Housecall', label: 'Housecall' },
+    { value: 'Independent Clinics', label: 'Independent Clinics' },
+    { value: 'Medical Center', label: 'Medical Center' },
+    { value: 'Multispecialty groups', label: 'Multispecialty groups' },
+    { value: 'Specialty Center', label: 'Specialty Center' },
+    { value: 'Veteran Affairs', label: 'Veteran Affairs' }
+  ]);
+  const [agencyVerticalOptions] = useState([
+    { value: 'Behavioural Health Service Groups', label: 'Behavioural Health Service Groups' },
+    { value: 'DME', label: 'DME' },
+    { value: 'Home Health Agency', label: 'Home Health Agency' },
+    { value: 'Hospice', label: 'Hospice' },
+    { value: 'Occupational Therapists', label: 'Occupational Therapists' },
+    { value: 'Physiotherapy Groups', label: 'Physiotherapy Groups' },
+    { value: 'Sleep Study', label: 'Sleep Study' },
+    { value: 'Speech Services', label: 'Speech Services' },
+    { value: 'Wound-care Groups', label: 'Wound-care Groups' }
+  ]);
 
   // Initialize with US Total data
   useEffect(() => {
@@ -47,10 +174,8 @@ function App() {
         label: div
       }));
       setDivisionOptions(divisions);
-      setMsaOptions([]);
     } else {
       setDivisionOptions([]);
-      setMsaOptions([]);
       // Reset to US Total
       setCurrentData(testData.currentWeek.data[0]);
       setPreviousData(testData.previousWeek.data[0]);
@@ -61,20 +186,6 @@ function App() {
   const handleDivisionChange = (selectedOption) => {
     setSelectedDivision(selectedOption);
     setSelectedMSA(null);
-    
-    if (selectedOption && selectedDG) {
-      const divisionData = testData.hierarchy[selectedDG.value][selectedOption.value];
-      const divisions = divisionData.divisions || [];
-      const msas = divisions.flatMap(div => divisionData.msas[div] || []);
-      
-      const msaOpts = msas.map(msa => ({
-        value: msa,
-        label: msa
-      }));
-      setMsaOptions(msaOpts);
-    } else {
-      setMsaOptions([]);
-    }
   };
 
   // Handle MSA selection
@@ -82,22 +193,244 @@ function App() {
     setSelectedMSA(selectedOption);
     // In a real app, you would fetch MSA-specific data here
   };
-
-  // Handle vertical selection (multi-select)
-  const handleVerticalChange = (selectedOptions) => {
-    setSelectedVerticals(selectedOptions || []);
+  
+  // Handle period selection
+  const handlePeriodChange = (selectedOption) => {
+    setSelectedPeriod(selectedOption);
   };
+  
+  // Handle year selection
+  const handleYearChange = (selectedOption) => {
+    setSelectedYear(selectedOption);
+  };
+  
+  // Handle period label selection
+  const handlePeriodLabelChange = (selectedOption) => {
+    setSelectedPeriodLabel(selectedOption);
+    
+    // Update period options based on selected period label
+    const newPeriodOptions = generateDynamicPeriodOptions(selectedOption.value);
+    setDynamicPeriodOptions(newPeriodOptions);
+    
+    // Reset period selection to first option when changing period label
+    if (newPeriodOptions.length > 0) {
+      setSelectedPeriod(newPeriodOptions[0]);
+    }
+  };
+  
+  // Handle region label selection
+  const handleRegionLabelChange = (selectedOption) => {
+    setSelectedRegionLabel(selectedOption);
+    setSelectedRegion(null); // Reset region selection
+    
+    // Update region options based on selected region label
+    switch(selectedOption.value) {
+      case 'Total USA':
+        setRegionOptions([{ value: 'USA', label: 'United States' }]);
+        setSelectedRegion({ value: 'USA', label: 'United States' });
+        break;
+      
+      case 'DG':
+        // Load DG options
+        const dgs = Object.keys(testData.hierarchy).map(dg => ({
+          value: dg,
+          label: dg
+        }));
+        setRegionOptions(dgs);
+        break;
+      
+      case 'Division':
+        // Need to load all divisions from all DGs
+        const allDivisions = [];
+        Object.keys(testData.hierarchy).forEach(dg => {
+          Object.keys(testData.hierarchy[dg]).forEach(division => {
+            allDivisions.push({ value: `${dg}|${division}`, label: division });
+          });
+        });
+        setRegionOptions(allDivisions);
+        break;
+      
+      case 'MSA':
+        setRegionOptions(msaAllOptions);
+        break;
+      
+      default:
+        setRegionOptions([]);
+    }
+  };
+  
+  // Handle unified region selection
+  const handleRegionChange = (selectedOption) => {
+    setSelectedRegion(selectedOption);
+  };
+
+  // Handle PG vertical selection (multi-select)
+  const handlePGVerticalChange = (selectedOptions) => {
+    setSelectedPGVerticals(selectedOptions || []);
+  };
+  
+  // Handle Agency vertical selection (multi-select)
+  const handleAgencyVerticalChange = (selectedOptions) => {
+    setSelectedAgencyVerticals(selectedOptions || []);
+  };
+  
+  // Calculate previous period based on selected period
+  const getPreviousPeriod = () => {
+    if (!selectedPeriod || !selectedPeriodLabel) return 'Previous Period';
+    
+    const currentPeriodValue = selectedPeriod.value;
+    const periodType = selectedPeriodLabel.value;
+    
+    switch(periodType) {
+      case 'Quarter':
+        // Handle Quarter (Q1, Q2, Q3, Q4)
+        const quarterMatch = currentPeriodValue.match(/Q(\d+)/);
+        if (quarterMatch) {
+          const quarterNum = parseInt(quarterMatch[1]);
+          return quarterNum > 1 ? `Q${quarterNum - 1}` : 'Q4';
+        }
+        break;
+      
+      case 'Month':
+        // Handle Month
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthIndex = months.indexOf(currentPeriodValue);
+        if (monthIndex !== -1) {
+          return monthIndex > 0 ? months[monthIndex - 1] : 'December';
+        }
+        break;
+      
+      case 'Year':
+        // Handle Year
+        const yearNum = parseInt(currentPeriodValue);
+        if (!isNaN(yearNum)) {
+          return `${yearNum - 1}`;
+        }
+        break;
+      
+      case 'Week':
+      default:
+        // Handle Week (Q4 Oct Week 4 format)
+        const match = currentPeriodValue.match(/(Q\d+)\s+(\w+)\s+Week\s+(\d+)/);
+        
+        if (match) {
+          const [, quarter, month, week] = match;
+          const weekNum = parseInt(week);
+          
+          if (weekNum > 1) {
+            // Previous week in same month
+            return `${quarter} ${month} Week ${weekNum - 1}`;
+          } else {
+            // Need to go to previous month
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthIndex = months.indexOf(month);
+            
+            if (monthIndex > 0) {
+              const prevMonth = months[monthIndex - 1];
+              const prevQuarter = `Q${Math.floor((monthIndex - 1) / 3) + 1}`;
+              return `${prevQuarter} ${prevMonth} Week 4`;
+            } else {
+              // Wrap to December of previous year
+              return `Q4 Dec Week 4`;
+            }
+          }
+        }
+        break;
+    }
+    
+    return 'Previous Period';
+  };
+  
+  // Get previous year for display
+  const getPreviousYear = () => {
+    if (!selectedYear) return '';
+    const currentYear = parseInt(selectedYear.value);
+    if (selectedPeriodLabel?.value === 'Year') {
+      // For Year period type, previous period already includes the year
+      return '';
+    }
+    return currentYear - 1;
+  };
+
+  // Convert period label to period type for API
+  const getPeriodTypeForAPI = () => {
+    if (!selectedPeriodLabel) return 'week';
+    
+    switch(selectedPeriodLabel.value) {
+      case 'Quarter':
+        return 'quarter';
+      case 'Month':
+        return 'month';
+      case 'Year':
+        return 'year';
+      case 'Week':
+      default:
+        return 'week';
+    }
+  };
+
+  // Format period label for API (e.g., "Q4 Oct Week1" without space before number)
+  const formatPeriodLabelForAPI = (periodValue) => {
+    if (!periodValue) return '';
+    
+    // Convert "Q4 Oct Week 4" to "Q4 Oct Week4"
+    return periodValue.replace(/Week\s+(\d+)/, 'Week$1');
+  };
+
+  // Fetch data from API when MSA is selected
+  useEffect(() => {
+    const fetchDataFromAPI = async () => {
+      // Only fetch if Region Label is MSA and a region is selected
+      if (selectedRegionLabel?.value !== 'MSA' || !selectedRegion) {
+        setApiData(null);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const params = {
+          msa: selectedRegion.value,
+          periodType: getPeriodTypeForAPI(),
+          periodLabel: formatPeriodLabelForAPI(selectedPeriod.value),
+          year: selectedYear.value
+        };
+
+        console.log('Fetching data with params:', params);
+        const data = await fetchAllData(params);
+        console.log('Received data:', data);
+        
+        setApiData(data);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to fetch data from API. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDataFromAPI();
+  }, [selectedRegion, selectedPeriod, selectedYear, selectedPeriodLabel, selectedRegionLabel]);
 
   // Filter verticals based on selection
   const getFilteredVerticals = (data) => {
     if (!data || !data.verticals) return [];
     
-    if (selectedVerticals.length === 0) {
+    // If no filters selected, return all
+    if (selectedPGVerticals.length === 0 && selectedAgencyVerticals.length === 0) {
       return data.verticals;
     }
     
+    // Combine selected verticals from both PG and Agency
+    const allSelectedVerticals = [
+      ...selectedPGVerticals,
+      ...selectedAgencyVerticals
+    ];
+    
     return data.verticals.filter(v => 
-      selectedVerticals.some(sv => sv.value === v.verticals)
+      allSelectedVerticals.some(sv => sv.value === v.verticals)
     );
   };
 
@@ -227,9 +560,13 @@ function App() {
       <header className="app-header">
         <h1>Performance Dashboard</h1>
         <div className="period-info">
-          <span className="current-period">{testData.currentWeek.periodLabel} {testData.currentWeek.year}</span>
+          <span className="current-period">
+            {selectedPeriod?.label}
+          </span>
           <span className="period-separator">vs</span>
-          <span className="previous-period">{testData.previousWeek.periodLabel} {testData.previousWeek.year}</span>
+          <span className="previous-period">
+            {getPreviousPeriod()}
+          </span>
         </div>
       </header>
 
@@ -237,56 +574,96 @@ function App() {
         <div className="filter-row">
           <div className="filter-group hierarchical-filters">
             <div className="filter-item">
-              <label>Distribution Group (DG)</label>
+              <label>Period Label</label>
               <Select
-                value={selectedDG}
-                onChange={handleDGChange}
-                options={dgOptions}
-                isClearable
-                placeholder="Select DG..."
+                value={selectedPeriodLabel}
+                onChange={handlePeriodLabelChange}
+                options={periodLabelOptions}
+                placeholder="Select Period Label..."
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
+            
+            <div className="filter-item">
+              <label>Period</label>
+              <Select
+                value={selectedPeriod}
+                onChange={handlePeriodChange}
+                options={dynamicPeriodOptions}
+                placeholder="Select Period..."
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
+            
+            <div className="filter-item">
+              <label>Region Label</label>
+              <Select
+                value={selectedRegionLabel}
+                onChange={handleRegionLabelChange}
+                options={regionLabelOptions}
+                placeholder="Select Region Label..."
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
+            
+            <div className="filter-item">
+              <label>
+                {selectedRegionLabel?.value === 'Total USA' && 'Region'}
+                {selectedRegionLabel?.value === 'DG' && 'Division Group'}
+                {selectedRegionLabel?.value === 'Division' && 'Division'}
+                {selectedRegionLabel?.value === 'MSA' && 'MSA'}
+              </label>
+              <Select
+                value={selectedRegion}
+                onChange={handleRegionChange}
+                options={regionOptions}
+                isClearable={selectedRegionLabel?.value !== 'Total USA'}
+                placeholder={`Select ${selectedRegionLabel?.label}...`}
                 className="react-select-container"
                 classNamePrefix="react-select"
               />
             </div>
 
-            <div className="filter-item">
-              <label>Division</label>
-              <Select
-                value={selectedDivision}
-                onChange={handleDivisionChange}
-                options={divisionOptions}
-                isClearable
-                isDisabled={!selectedDG}
-                placeholder="Select Division..."
-                className="react-select-container"
-                classNamePrefix="react-select"
-              />
-            </div>
-
-            <div className="filter-item">
-              <label>MSA</label>
-              <Select
-                value={selectedMSA}
-                onChange={handleMSAChange}
-                options={msaOptions}
-                isClearable
-                isDisabled={!selectedDivision}
-                placeholder="Select MSA..."
-                className="react-select-container"
-                classNamePrefix="react-select"
-              />
-            </div>
+            {selectedRegionLabel?.value === 'MSA' && (
+              <div className="filter-item">
+                <label>Year</label>
+                <Select
+                  value={selectedYear}
+                  onChange={handleYearChange}
+                  options={yearOptions}
+                  placeholder="Select Year..."
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                />
+              </div>
+            )}
           </div>
 
           <div className="filter-group vertical-filter">
             <div className="filter-item">
-              <label>Verticals</label>
+              <label>PG Verticals</label>
               <Select
-                value={selectedVerticals}
-                onChange={handleVerticalChange}
-                options={testData.verticalOptions}
+                value={selectedPGVerticals}
+                onChange={handlePGVerticalChange}
+                options={pgVerticalOptions}
                 isMulti
-                placeholder="All Verticals"
+                placeholder="All PG Verticals"
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
+            
+            <div className="filter-item">
+              <label>Agency Verticals</label>
+              <Select
+                value={selectedAgencyVerticals}
+                onChange={handleAgencyVerticalChange}
+                options={agencyVerticalOptions}
+                isMulti
+                placeholder="All Agency Verticals"
                 className="react-select-container"
                 classNamePrefix="react-select"
               />
@@ -296,72 +673,173 @@ function App() {
       </div>
 
       <div className="content">
-        {currentData && (
-          <div className="overview-section">
-            <h2 className="main-title">
-              {selectedMSA ? selectedMSA.label : 
-               selectedDivision ? selectedDivision.label : 
-               selectedDG ? selectedDG.label : 'US Total'} Overview
-            </h2>
-            <div className="overview-stats">
-              <div className="stat-card">
-                <div className="stat-label">PG Estimate</div>
-                <div className="stat-value">{currentData.pgEstimate}</div>
-                {previousData && (
-                  <div className="stat-change">
-                    {calculateChange(currentData.pgEstimate, previousData.pgEstimate) 
-                      ? `${calculateChange(currentData.pgEstimate, previousData.pgEstimate)}% WoW` 
-                      : ''}
-                  </div>
-                )}
-              </div>
-              <div className="stat-card">
-                <div className="stat-label">Agency Estimate</div>
-                <div className="stat-value">{currentData.agencyEstimate}</div>
-                {previousData && (
-                  <div className="stat-change">
-                    {calculateChange(currentData.agencyEstimate, previousData.agencyEstimate) 
-                      ? `${calculateChange(currentData.agencyEstimate, previousData.agencyEstimate)}% WoW` 
-                      : ''}
-                  </div>
-                )}
-              </div>
-              <div className="stat-card">
-                <div className="stat-label">Active Verticals</div>
-                <div className="stat-value">{currentVerticals.length}</div>
-              </div>
-            </div>
+        {loading && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading data...</p>
           </div>
         )}
 
-        {currentVerticals.map((vertical, index) => {
-          const prevVertical = previousVerticals.find(v => v.verticals === vertical.verticals);
-          
-          return (
-            <div key={index} className="vertical-container">
-              <div className="vertical-header">
-                <h2>{vertical.verticals}</h2>
-                <div className="vertical-stats">
-                  <span className="vertical-stat">
-                    PG Acquisition: {vertical.pgaquisitionPercentage}%
-                  </span>
-                  <span className="vertical-stat">
-                    PG Customer Success: {vertical.pgCustomerSuccessPercentage}%
-                  </span>
-                  {vertical.hhahSalesValuePercentage && (
-                    <span className="vertical-stat">
-                      HHAH Sales: {vertical.hhahSalesValuePercentage}%
-                    </span>
-                  )}
+        {error && (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && apiData && selectedRegionLabel?.value === 'MSA' && (
+          <>
+            {/* Display API Data for MSA */}
+            <div className="overview-section">
+              <h2 className="main-title">
+                {selectedRegion?.label} Overview
+              </h2>
+              <div className="overview-stats">
+                <div className="stat-card">
+                  <div className="stat-label">PG Estimate</div>
+                  <div className="stat-value">{apiData.pgData?.pgEstimate || 'N/A'}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Agency Estimate</div>
+                  <div className="stat-value">{apiData.hhahData?.agencyEstimate || 'N/A'}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Period</div>
+                  <div className="stat-value">{apiData.pgData?.periodLabel}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Year</div>
+                  <div className="stat-value">{apiData.pgData?.year}</div>
                 </div>
               </div>
-
-              {vertical.pgaquisition && renderPGAcquisition(vertical.pgaquisition, prevVertical?.pgaquisition)}
-              {vertical.pgCustomerSuccess && renderPGCustomerSuccess(vertical.pgCustomerSuccess, prevVertical?.pgCustomerSuccess)}
-              {vertical.hhahSalesValue && renderHHAHSalesValue(vertical.hhahSalesValue, prevVertical?.hhahSalesValue)}
             </div>
-          );
-        })}
+
+            {/* Display PG Verticals from API */}
+            {apiData.pgData?.verticals && apiData.pgData.verticals.length > 0 && (
+              <div className="api-section">
+                <h2 className="section-title">PG (Practice Group) Data</h2>
+                {apiData.pgData.verticals
+                  .filter(vertical => {
+                    // Filter by selected PG verticals if any
+                    if (selectedPGVerticals.length === 0) return true;
+                    return selectedPGVerticals.some(sel => sel.value === vertical.verticals);
+                  })
+                  .map((vertical, index) => (
+                    <div key={index} className="vertical-container">
+                      <div className="vertical-header">
+                        <h2>{vertical.verticals}</h2>
+                        <div className="vertical-stats">
+                          <span className="vertical-stat">
+                            PG Acquisition: {vertical.pgaquisitionPercentage}%
+                          </span>
+                          <span className="vertical-stat">
+                            PG Customer Success: {vertical.pgCustomerSuccessPercentage}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {vertical.pgaquisition && renderPGAcquisition(vertical.pgaquisition, null)}
+                      {vertical.pgCustomerSuccess && renderPGCustomerSuccess(vertical.pgCustomerSuccess, null)}
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Display Agency Verticals from API */}
+            {apiData.hhahData?.verticals && apiData.hhahData.verticals.length > 0 && (
+              <div className="api-section">
+                <h2 className="section-title">Agency (HHAH) Data</h2>
+                {apiData.hhahData.verticals
+                  .filter(vertical => {
+                    // Filter by selected Agency verticals if any
+                    if (selectedAgencyVerticals.length === 0) return true;
+                    return selectedAgencyVerticals.some(sel => sel.value === vertical.verticals);
+                  })
+                  .map((vertical, index) => (
+                    <div key={index} className="vertical-container">
+                      <div className="vertical-header">
+                        <h2>{vertical.verticals}</h2>
+                        <div className="vertical-stats">
+                          <span className="vertical-stat">
+                            HHAH Sales: {vertical.hhahSalesValuePercentage}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {vertical.hhahSalesValue && renderHHAHSalesValue(vertical.hhahSalesValue, null)}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {!loading && !error && (!apiData || selectedRegionLabel?.value !== 'MSA') && currentData && (
+          <>
+            {/* Display Test Data for non-MSA selections */}
+            <div className="overview-section">
+              <h2 className="main-title">
+                {selectedRegion ? selectedRegion.label : 'US Total'} Overview
+              </h2>
+              <div className="overview-stats">
+                <div className="stat-card">
+                  <div className="stat-label">PG Estimate</div>
+                  <div className="stat-value">{currentData.pgEstimate}</div>
+                  {previousData && (
+                    <div className="stat-change">
+                      {calculateChange(currentData.pgEstimate, previousData.pgEstimate) 
+                        ? `${calculateChange(currentData.pgEstimate, previousData.pgEstimate)}% WoW` 
+                        : ''}
+                    </div>
+                  )}
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Agency Estimate</div>
+                  <div className="stat-value">{currentData.agencyEstimate}</div>
+                  {previousData && (
+                    <div className="stat-change">
+                      {calculateChange(currentData.agencyEstimate, previousData.agencyEstimate) 
+                        ? `${calculateChange(currentData.agencyEstimate, previousData.agencyEstimate)}% WoW` 
+                        : ''}
+                    </div>
+                  )}
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Active Verticals</div>
+                  <div className="stat-value">{currentVerticals.length}</div>
+                </div>
+              </div>
+            </div>
+
+            {currentVerticals.map((vertical, index) => {
+              const prevVertical = previousVerticals.find(v => v.verticals === vertical.verticals);
+              
+              return (
+                <div key={index} className="vertical-container">
+                  <div className="vertical-header">
+                    <h2>{vertical.verticals}</h2>
+                    <div className="vertical-stats">
+                      <span className="vertical-stat">
+                        PG Acquisition: {vertical.pgaquisitionPercentage}%
+                      </span>
+                      <span className="vertical-stat">
+                        PG Customer Success: {vertical.pgCustomerSuccessPercentage}%
+                      </span>
+                      {vertical.hhahSalesValuePercentage && (
+                        <span className="vertical-stat">
+                          HHAH Sales: {vertical.hhahSalesValuePercentage}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {vertical.pgaquisition && renderPGAcquisition(vertical.pgaquisition, prevVertical?.pgaquisition)}
+                  {vertical.pgCustomerSuccess && renderPGCustomerSuccess(vertical.pgCustomerSuccess, prevVertical?.pgCustomerSuccess)}
+                  {vertical.hhahSalesValue && renderHHAHSalesValue(vertical.hhahSalesValue, prevVertical?.hhahSalesValue)}
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
     </div>
   );

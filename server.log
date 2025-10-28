@@ -1,0 +1,257 @@
+Proxy server running on http://localhost:3001
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+Error fetching HHAH data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'HHAH CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q4 Oct Week2',
+  year: '2025'
+}
+Error fetching PG data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'PG CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q4 Oct Week2',
+  year: '2025'
+}
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+Error fetching HHAH data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'HHAH CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q4 Oct Week2',
+  year: '2025'
+}
+Error fetching PG data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'PG CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q4 Oct Week2',
+  year: '2025'
+}
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+Error fetching PG data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'PG CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q4 Oct Week2',
+  year: '2025'
+}
+Error fetching HHAH data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'HHAH CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q4 Oct Week2',
+  year: '2025'
+}
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q4 Oct Week2",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+PG response status: 200
+HHAH response status: 200
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "January",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "January",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+Error fetching HHAH data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'HHAH CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'month',
+  periodLabel: 'January',
+  year: '2025'
+}
+Error fetching PG data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'PG CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'month',
+  periodLabel: 'January',
+  year: '2025'
+}
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "August",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "August",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+Error fetching HHAH data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'HHAH CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'month',
+  periodLabel: 'August',
+  year: '2025'
+}
+Error fetching PG data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'PG CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'month',
+  periodLabel: 'August',
+  year: '2025'
+}
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "July",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "July",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+Error fetching PG data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'PG CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'month',
+  periodLabel: 'July',
+  year: '2025'
+}
+Error fetching HHAH data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'HHAH CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'month',
+  periodLabel: 'July',
+  year: '2025'
+}
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "August",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "month",
+  "periodLabel": "August",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+HHAH response status: 200
+PG response status: 200
+Received HHAH request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q1 Jan Week1",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/hhah
+Received PG request: {
+  "msa": "Providence-Warwick, RI-MA",
+  "periodType": "week",
+  "periodLabel": "Q1 Jan Week1",
+  "year": "2025"
+}
+Calling: https://dawavorderpatient-hqe2apddbje9gte0.eastus-01.azurewebsites.net/api/cycleoflife/pg
+Error fetching HHAH data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'HHAH CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q1 Jan Week1',
+  year: '2025'
+}
+Error fetching PG data: Request failed with status code 404
+Response status: 404
+Response data: {
+  message: 'PG CircleOfLife document not found',
+  msa: 'Providence-Warwick, RI-MA',
+  periodType: 'week',
+  periodLabel: 'Q1 Jan Week1',
+  year: '2025'
+}
